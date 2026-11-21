@@ -1,34 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchHealth } from "@/lib/api";
+import { ApiError, fetchHealth } from "@/lib/api";
 
-type State = "checking" | "online" | "offline";
+type State =
+  | { kind: "checking" }
+  | { kind: "online" }
+  | { kind: "offline"; reason: string };
 
-const STYLES: Record<State, { dot: string; text: string }> = {
-  checking: { dot: "bg-zinc-500", text: "Checking API…" },
-  online: { dot: "bg-emerald-500", text: "API online" },
-  offline: { dot: "bg-red-500", text: "API offline" },
-};
-
+/** Reports connectivity to OUR FastAPI backend only. Market-data provider status is separate. */
 export function BackendStatus() {
-  const [state, setState] = useState<State>("checking");
+  const [state, setState] = useState<State>({ kind: "checking" });
 
   useEffect(() => {
     const controller = new AbortController();
     fetchHealth(controller.signal)
-      .then(() => setState("online"))
-      .catch(() => {
-        if (!controller.signal.aborted) setState("offline");
+      .then(() => setState({ kind: "online" }))
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        setState({
+          kind: "offline",
+          reason: err instanceof ApiError ? err.message : "Unknown error",
+        });
       });
     return () => controller.abort();
   }, []);
 
-  const { dot, text } = STYLES[state];
+  const dot =
+    state.kind === "online" ? "bg-emerald-500" : state.kind === "offline" ? "bg-red-500" : "bg-zinc-500";
+  const text =
+    state.kind === "online" ? "Backend API online" : state.kind === "offline" ? "Backend API offline" : "Checking backend API…";
+
   return (
-    <span role="status" className="inline-flex items-center gap-2 text-xs text-muted">
+    <span
+      role="status"
+      title={state.kind === "offline" ? state.reason : undefined}
+      className="inline-flex items-center gap-2 text-xs text-muted"
+    >
       <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden="true" />
       {text}
+      {state.kind === "offline" && <span className="text-red-400/80">({state.reason})</span>}
     </span>
   );
 }
