@@ -19,13 +19,11 @@ export function SectionCard({
   className = "",
 }: SectionCardProps) {
   return (
-    <section
-      className={`rounded-xl border border-line bg-surface shadow-card ${className}`}
-    >
+    <section className={`min-w-0 overflow-hidden rounded-2xl border border-line bg-surface shadow-card ${className}`}>
       {(title || action) && (
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            {title && <h2 className="text-sm font-semibold text-foreground">{title}</h2>}
+            {title && <h2 className="font-display text-[15px] font-semibold tracking-tight text-foreground">{title}</h2>}
             {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
           </div>
           {action}

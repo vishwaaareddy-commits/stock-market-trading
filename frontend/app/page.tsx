@@ -1,6 +1,10 @@
+"use client";
+
 import { ArrowRight, Briefcase, Layers, TrendingDown, TrendingUp, Wallet, Zap, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { ChartContainer } from "@/components/ui/ChartContainer";
+import { LineChart } from "@/components/ui/LineChart";
+import { cashSeries } from "@/lib/series";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { MockBadge, MockDataNotice } from "@/components/ui/MockBadge";
@@ -11,10 +15,13 @@ import { formatPercent, formatPrice, valueTone } from "@/lib/format";
 import {
   MOCK_INSTRUMENTS,
   MOCK_OVERVIEW_STATS,
-  MOCK_POSITIONS,
   MOCK_SIGNALS,
 } from "@/lib/mock-data";
+import { VirtualBadge } from "@/components/ui/VirtualBadge";
+import { formatCompact, formatSigned, formatVirtual, signTone } from "@/lib/money";
 import { NAV_ITEMS } from "@/lib/nav";
+import { useApi } from "@/lib/useApi";
+import type { Position, Wallet as WalletData, WalletTx } from "@/lib/types";
 
 const METRIC_ICONS: Record<string, LucideIcon> = {
   "Paper Equity": Wallet,
@@ -32,6 +39,12 @@ const PERFORMANCE_PLACEHOLDERS = [
 ];
 
 export default function OverviewPage() {
+  const wallet = useApi<WalletData>("/wallet");
+  const positions = useApi<Position[]>("/paper/positions");
+  const ledger = useApi<WalletTx[]>("/wallet/transactions?limit=200");
+  const series = cashSeries(ledger.data ?? []);
+  const w = wallet.data;
+  const open = positions.data;
   return (
     <>
       <PageHeader
@@ -40,24 +53,41 @@ export default function OverviewPage() {
       />
       <div className="space-y-6">
         <MockDataNotice>
-          Figures below are placeholders. No strategy is running and no market data has been loaded.
+Signals, strategies and market panels below are placeholders. Paper equity and open positions are real values from your virtual wallet.
         </MockDataNotice>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {MOCK_OVERVIEW_STATS.map((s) => (
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          {/* Real, live values from the caller's VIRTUAL wallet */}
+          <MetricCard
+            label="Paper Equity"
+            icon={Wallet}
+            value={w ? formatVirtual(w.total_equity) : "…"}
+            hint={w ? `Virtual · available ${formatVirtual(w.available_balance)}` : "Loading virtual wallet"}
+          />
+          <MetricCard
+            label="Open Positions"
+            icon={Briefcase}
+            value={open ? String(open.length) : "…"}
+            hint="Simulated, long-only"
+          />
+          {/* Still placeholders until strategies and signals exist */}
+          {MOCK_OVERVIEW_STATS.slice(2).map((s) => (
             <MetricCard key={s.label} {...s} icon={METRIC_ICONS[s.label]} mock />
           ))}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <div className="grid items-start gap-6 lg:grid-cols-3">
+          <div className="min-w-0 lg:col-span-2">
             <ChartContainer
-              title="Equity curve"
-              description="Paper account value over time"
-              isEmpty
-              emptyTitle="No equity history yet"
-              emptyDescription="The equity curve appears after the first closed paper trade."
-            />
+              title="Virtual cash balance"
+              description="Available + reserved funds, from your wallet ledger"
+              action={<VirtualBadge />}
+              isEmpty={series.length < 2}
+              emptyTitle={ledger.loading ? "Loading balance history…" : "No balance history yet"}
+              emptyDescription="Your balance chart appears after your second wallet event (an allocation, an order or a fill)."
+            >
+              <LineChart points={series} format={formatCompact} label="Virtual cash balance over time" height={260} />
+            </ChartContainer>
           </div>
           <SectionCard title="Performance summary" description="Closed paper trades only">
             <dl className="divide-y divide-line">
@@ -72,7 +102,7 @@ export default function OverviewPage() {
           </SectionCard>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid items-start gap-6 lg:grid-cols-3">
           <SectionCard
             title="Recent signals"
             description="Latest strategy decisions"
@@ -124,32 +154,35 @@ export default function OverviewPage() {
           </SectionCard>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid items-start gap-6 lg:grid-cols-3">
           <SectionCard
             title="Open positions"
             description="Simulated, long-only"
-            action={<MockBadge />}
+            action={<VirtualBadge />}
             className="lg:col-span-2"
             flush
           >
-            <ul className="divide-y divide-line">
-              {MOCK_POSITIONS.map((p) => {
-                const pnl = (p.lastPrice - p.entryPrice) * p.quantity;
-                return (
-                  <li key={p.symbol} className="flex items-center justify-between gap-3 px-5 py-3.5">
+            {!open ? (
+              <p className="px-5 py-8 text-center text-sm text-muted">Loading…</p>
+            ) : open.length === 0 ? (
+              <p className="px-5 py-8 text-center text-sm text-muted">No open paper positions.</p>
+            ) : (
+              <ul className="divide-y divide-line">
+                {open.map((p) => (
+                  <li key={p.instrument_id} className="flex items-center justify-between gap-3 px-5 py-3.5">
                     <div>
                       <p className="text-sm font-medium text-foreground">{p.symbol}</p>
                       <p className="text-xs tabular-nums text-muted">
-                        {p.quantity} @ {formatPrice(p.entryPrice)}
+                        {p.quantity} @ {formatVirtual(p.avg_entry_price)}
                       </p>
                     </div>
-                    <p className={`text-sm font-semibold tabular-nums ${TONE_TEXT[valueTone(pnl)]}`}>
-                      {formatPrice(pnl)}
+                    <p className={`text-sm font-semibold tabular-nums ${TONE_TEXT[signTone(p.unrealized_pnl)]}`}>
+                      {p.unrealized_pnl === null ? "—" : formatSigned(p.unrealized_pnl)}
                     </p>
                   </li>
-                );
-              })}
-            </ul>
+                ))}
+              </ul>
+            )}
           </SectionCard>
 
           <SectionCard title="Sections">

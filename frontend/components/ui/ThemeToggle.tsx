@@ -20,7 +20,7 @@ export function ThemeToggle({ showLabels = false }: { showLabels?: boolean }) {
     <div
       role="group"
       aria-label="Colour theme"
-      className="inline-flex h-9 items-center gap-0.5 rounded-lg border border-line bg-elevated p-0.5"
+      className="inline-flex h-10 items-center gap-0.5 rounded-xl border border-line bg-elevated p-1"
     >
       {OPTIONS.map(({ value, label, icon: Icon }) => {
         const active = theme === value;
@@ -32,13 +32,11 @@ export function ThemeToggle({ showLabels = false }: { showLabels?: boolean }) {
             aria-label={`${label} theme`}
             title={`${label} theme`}
             onClick={() => setTheme(value)}
-            className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2.5 text-sm font-medium transition-colors ${
-              active
-                ? "bg-accent text-on-accent"
-                : "text-secondary hover:bg-surface hover:text-foreground"
+            className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium transition-all ${
+              active ? "bg-accent text-on-accent shadow-glow" : "text-secondary hover:bg-surface hover:text-foreground"
             }`}
           >
-            <Icon size={16} aria-hidden="true" />
+            <Icon size={15} aria-hidden="true" />
             {showLabels && <span>{label}</span>}
           </button>
         );

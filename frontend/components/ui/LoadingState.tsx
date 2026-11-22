@@ -6,8 +6,8 @@ export function LoadingState({ label = "Loading…", rows = 3 }: { label?: strin
         <div
           key={i}
           aria-hidden="true"
-          className="h-4 animate-pulse rounded bg-elevated"
-          style={{ width: `${90 - i * 12}%` }}
+          className="skeleton h-4 rounded-md bg-elevated"
+          style={{ width: `${92 - i * 14}%` }}
         />
       ))}
     </div>

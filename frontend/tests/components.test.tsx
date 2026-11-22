@@ -10,8 +10,26 @@ import { MockDataNotice } from "@/components/ui/MockBadge";
 import { NAV_ITEMS, findNavItem, isActive } from "@/lib/nav";
 import { formatCurrency, formatPercent, formatPrice, valueTone } from "@/lib/format";
 
-let mockPath = "/signals";
-vi.mock("next/navigation", () => ({ usePathname: () => mockPath }));
+const state = vi.hoisted(() => ({
+  path: "/signals",
+  replace: vi.fn(),
+  push: vi.fn(),
+  auth: {
+    user: { id: 2, username: "alice", display_name: "Alice", role: "ADMIN", must_change_password: false },
+    status: "authenticated",
+    login: vi.fn(),
+    logout: vi.fn(),
+    refresh: vi.fn(),
+  } as Record<string, unknown>,
+}));
+vi.mock("next/navigation", () => ({
+  usePathname: () => state.path,
+  useRouter: () => ({ replace: state.replace, push: state.push }),
+}));
+vi.mock("@/components/auth/AuthProvider", () => ({
+  useAuth: () => state.auth,
+  AuthProvider: ({ children }: { children: unknown }) => children,
+}));
 vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ status: "ok" }) }));
 
 describe("navigation", () => {
@@ -37,12 +55,12 @@ describe("navigation", () => {
   });
 
   it("renders identity, sidebar links and marks the current page", () => {
-    mockPath = "/signals";
+    state.path = "/signals";
     render(<Sidebar />);
     expect(screen.getByText("Trading System")).toBeInTheDocument();
     expect(screen.getByText("NSE · Paper Trading")).toBeInTheDocument();
     const nav = within(screen.getByRole("navigation", { name: "Main" }));
-    expect(nav.getAllByRole("link")).toHaveLength(NAV_ITEMS.length);
+    expect(nav.getAllByRole("link")).toHaveLength(NAV_ITEMS.length + 1); // + My Wallet
     expect(nav.getByRole("link", { name: "Signals" })).toHaveAttribute("aria-current", "page");
     expect(nav.getByRole("link", { name: "Overview" })).not.toHaveAttribute("aria-current");
   });
@@ -50,7 +68,7 @@ describe("navigation", () => {
 
 describe("Topbar", () => {
   it("shows page title, paper-only badge, theme toggle and both status chips exactly once", () => {
-    mockPath = "/market-data";
+    state.path = "/market-data";
     render(<Topbar />);
     expect(within(screen.getByRole("navigation", { name: "Breadcrumb" })).getByText("Market Data")).toBeInTheDocument();
     expect(screen.getByText("PAPER TRADING ONLY")).toBeInTheDocument();
@@ -62,7 +80,7 @@ describe("Topbar", () => {
 
 describe("AppShell mobile drawer", () => {
   it("opens from the menu button and closes on Escape and via the close button", () => {
-    mockPath = "/";
+    state.path = "/";
     render(
       <AppShell>
         <p>content</p>
@@ -83,7 +101,7 @@ describe("AppShell mobile drawer", () => {
   });
 
   it("closes the drawer when a navigation link is chosen", () => {
-    mockPath = "/";
+    state.path = "/";
     render(<AppShell>x</AppShell>);
     const menu = screen.getByRole("button", { name: "Open navigation" });
     fireEvent.click(menu);

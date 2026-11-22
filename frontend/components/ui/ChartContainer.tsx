@@ -13,13 +13,14 @@ type ChartContainerProps = {
   emptyDescription?: string;
   mock?: boolean;
   height?: number;
+  action?: ReactNode;
   children?: ReactNode;
 };
 
 /**
- * Theme-aware frame for charts. Chart libraries should style themselves with the CSS
- * variables --chart-grid, --chart-axis, --chart-tooltip-bg, --chart-tooltip-border,
- * --positive, --negative and --accent, which change with the active theme automatically.
+ * Theme-aware frame for charts. Charts style themselves with the CSS variables --chart-grid,
+ * --chart-axis, --chart-tooltip-bg, --chart-tooltip-border, --positive, --negative and --accent,
+ * which change with the active theme automatically.
  */
 export function ChartContainer({
   title,
@@ -29,14 +30,15 @@ export function ChartContainer({
   emptyDescription = "This chart will populate once data is available.",
   mock = false,
   height = 280,
+  action,
   children,
 }: ChartContainerProps) {
   return (
-    <SectionCard title={title} description={description} action={mock ? <MockBadge /> : undefined}>
+    <SectionCard title={title} description={description} action={mock ? <MockBadge /> : action}>
       {isEmpty || !children ? (
-        <EmptyState title={emptyTitle} description={emptyDescription} icon={LineChart} />
+        <EmptyState title={emptyTitle} description={emptyDescription} icon={LineChart} illustration="chart" />
       ) : (
-        <div style={{ height }} className="w-full min-w-0">
+        <div style={{ minHeight: height }} className="w-full min-w-0">
           {children}
         </div>
       )}
