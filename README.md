@@ -58,6 +58,25 @@ returns 503 `not_configured` until `DATABASE_URL` is set).
 
 Only point `DATABASE_URL` at a local or development database when running migrations.
 
+## Upstox market data (read-only)
+
+OAuth runs entirely on the backend; the client secret and tokens never reach the browser. The access
+token is encrypted (Fernet) and stored in the `broker_connections` table, so restarts keep it.
+Upstox tokens expire daily at ~03:30 IST, so reconnect each trading day.
+
+Backend env vars: `UPSTOX_CLIENT_ID`, `UPSTOX_CLIENT_SECRET`, `UPSTOX_REDIRECT_URI`
+(must equal the URL registered with Upstox), `UPSTOX_TOKEN_ENCRYPTION_KEY` (`npm run generate:key`),
+optional `UPSTOX_ALLOWED_USER_ID`, `FRONTEND_URL`. Also requires `DATABASE_URL` and `npm run migrate`.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/v1/auth/upstox/login` | Open in a browser to start the login |
+| `GET /api/v1/auth/upstox/callback` | Registered redirect URL (Upstox calls it) |
+| `GET /api/v1/auth/upstox/status[?verify=true]` | Connection status for the frontend |
+| `GET /api/v1/market-data/upstox/test` | Fetches recent 15m candles; returns a summary only |
+
+Read-only: no order, fund or portfolio endpoints exist. Trading stays paper-only.
+
 ## Frontend commands (run in `frontend/`)
 
 `npm run dev` · `npm run build` · `npm run lint` · `npm run typecheck` · `npm test`

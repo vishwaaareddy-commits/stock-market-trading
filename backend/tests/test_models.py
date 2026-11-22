@@ -13,6 +13,7 @@ def test_expected_tables_registered():
         "signals",
         "paper_orders",
         "paper_trades",
+        "broker_connections",
     }
 
 

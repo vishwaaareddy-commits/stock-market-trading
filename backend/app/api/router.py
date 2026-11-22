@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
-from app.api.routes import health
+from app.api.routes import health, market_data, upstox_auth
 
 api_router = APIRouter()
 api_router.include_router(health.router)
+api_router.include_router(upstox_auth.router)
+api_router.include_router(market_data.router)
