@@ -36,6 +36,8 @@ class PaperTrade(Base):
     status: Mapped[TradeStatus] = mapped_column(
         Enum(TradeStatus, name="trade_status"), default=TradeStatus.OPEN
     )
+    entry_charge: Mapped[Decimal] = mapped_column(Numeric(*PRICE_PRECISION), default=Decimal("0"))
+    exit_charge: Mapped[Decimal] = mapped_column(Numeric(*PRICE_PRECISION), default=Decimal("0"))
     pnl: Mapped[Decimal | None] = mapped_column(Numeric(*PRICE_PRECISION))
     opened_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

@@ -7,5 +7,7 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
     globals: true,
+    // jsdom workers are memory-hungry; run files serially so low-RAM machines do not crash.
+    fileParallelism: false,
   },
 });

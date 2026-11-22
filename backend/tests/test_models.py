@@ -13,6 +13,12 @@ def test_expected_tables_registered():
         "signals",
         "paper_orders",
         "paper_trades",
+        "broker_connections",
+        "auth_sessions",
+        "login_attempts",
+        "audit_logs",
+        "wallets",
+        "wallet_transactions",
     }
 
 

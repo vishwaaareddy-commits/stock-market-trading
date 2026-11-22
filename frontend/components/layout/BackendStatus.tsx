@@ -27,19 +27,27 @@ export function BackendStatus() {
   }, []);
 
   const dot =
-    state.kind === "online" ? "bg-emerald-500" : state.kind === "offline" ? "bg-red-500" : "bg-zinc-500";
+    state.kind === "online"
+      ? "bg-positive"
+      : state.kind === "offline"
+        ? "bg-negative"
+        : "animate-pulse bg-muted";
   const text =
-    state.kind === "online" ? "Backend API online" : state.kind === "offline" ? "Backend API offline" : "Checking backend API…";
+    state.kind === "online"
+      ? "Backend API online"
+      : state.kind === "offline"
+        ? "Backend API offline"
+        : "Checking backend API…";
 
   return (
     <span
       role="status"
       title={state.kind === "offline" ? state.reason : undefined}
-      className="inline-flex items-center gap-2 text-xs text-muted"
+      className="inline-flex h-7 items-center gap-2 rounded-full border border-line bg-elevated px-3 text-xs font-medium text-secondary"
     >
       <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden="true" />
       {text}
-      {state.kind === "offline" && <span className="text-red-400/80">({state.reason})</span>}
+      {state.kind === "offline" && <span className="hidden text-negative lg:inline">({state.reason})</span>}
     </span>
   );
 }

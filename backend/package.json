@@ -13,6 +13,8 @@
     "migrate:new": "node scripts/py.js -m alembic revision --autogenerate -m",
     "migrate:down": "node scripts/py.js -m alembic downgrade -1",
     "migrate:sql": "node scripts/py.js -m alembic upgrade head --sql",
-    "install:deps": "node scripts/py.js -m pip install -r requirements.txt"
+    "generate:key": "node scripts/py.js scripts/generate_key.py",
+    "install:deps": "node scripts/py.js -m pip install -r requirements.txt",
+    "bootstrap:superadmin": "node scripts/py.js -m app.cli bootstrap-superadmin"
   }
 }
