@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db_or_503, get_token_cipher, get_upstox_client
+from app.api.deps import get_db_or_503, get_token_cipher, get_upstox_client, require_super_admin
 from app.core.security import TokenCipher, TokenCryptoError
 from app.integrations.upstox import UpstoxAuthError, UpstoxClient, UpstoxError
 from app.services import broker_connection as store
@@ -20,6 +20,7 @@ def test_connection(
     client: UpstoxClient = Depends(get_upstox_client),
     cipher: TokenCipher = Depends(get_token_cipher),
     db: Session = Depends(get_db_or_503),
+    _admin=Depends(require_super_admin),  # connectivity test uses the shared provider token
 ) -> dict:
     """Fetch a few recent 15-minute candles to prove market-data access works.
 

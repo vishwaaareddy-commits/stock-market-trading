@@ -5,7 +5,13 @@ from fastapi import APIRouter, Cookie, Depends, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db_or_503, get_token_cipher, get_upstox_client, require_upstox_settings
+from app.api.deps import (
+    get_current_user,
+    get_db_or_503,
+    get_token_cipher,
+    get_upstox_client,
+    require_upstox_settings,
+)
 from app.core.config import Settings, get_settings
 from app.core.security import STATE_MAX_AGE_SECONDS, TokenCipher, TokenCryptoError, create_state, verify_state
 from app.integrations.upstox import UpstoxAuthError, UpstoxClient, UpstoxError
@@ -108,6 +114,7 @@ def status(
     verify: bool = Query(default=False, description="Also call Upstox to confirm the token works"),
     settings: Settings = Depends(get_settings),
     db: Session = Depends(get_db_or_503),
+    _user=Depends(get_current_user),  # signed-in users only
 ) -> dict:
     """Connection status for the frontend. Never returns tokens or secrets."""
     result: dict = {
