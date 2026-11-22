@@ -1,8 +1,10 @@
-import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
+"use client";
+
 import { DataTable } from "@/components/ui/DataTable";
 import { MockDataNotice } from "@/components/ui/MockBadge";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MOCK_STRATEGIES } from "@/lib/mock-data";
 
 export default function StrategiesPage() {
@@ -14,22 +16,30 @@ export default function StrategiesPage() {
       />
       <div className="space-y-6">
         <MockDataNotice>Strategy list is a placeholder showing planned strategies.</MockDataNotice>
-        <Card title="Strategies">
+        <SectionCard title="Strategies" description="Planned and draft strategy definitions" flush>
           <DataTable
+            caption="Strategies"
             rows={MOCK_STRATEGIES}
             rowKey={(r) => r.id}
+            searchText={(r) => `${r.name} ${r.type} ${r.status}`}
+            searchPlaceholder="Search strategies"
             columns={[
-              { header: "Name", render: (r) => r.name },
-              { header: "Type", render: (r) => <code className="font-mono text-xs">{r.type}</code> },
+              { header: "Name", render: (r) => <span className="font-medium">{r.name}</span> },
+              {
+                header: "Type",
+                render: (r) => (
+                  <code className="rounded bg-elevated px-1.5 py-0.5 font-mono text-xs text-secondary">{r.type}</code>
+                ),
+              },
               { header: "Timeframe", render: (r) => r.timeframe },
-              { header: "Parameters", render: (r) => r.params },
+              { header: "Parameters", render: (r) => <span className="text-secondary">{r.params}</span> },
               {
                 header: "Status",
-                render: (r) => <Badge tone={r.status === "Planned" ? "info" : "neutral"}>{r.status}</Badge>,
+                render: (r) => <StatusBadge tone={r.status === "Planned" ? "info" : "neutral"}>{r.status}</StatusBadge>,
               },
             ]}
           />
-        </Card>
+        </SectionCard>
       </div>
     </>
   );

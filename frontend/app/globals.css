@@ -1,28 +1,120 @@
 @import "tailwindcss";
 
-/* Dark trading-terminal palette */
-:root {
-  --background: #0b0e14;
-  --surface: #11151c;
-  --line: #222a36;
-  --foreground: #e6e9ef;
-  --muted: #8b95a5;
-  --accent: #38bdf8;
+/*
+ * Midnight Pro design tokens.
+ * Dark is the default (:root). Light is an independently tuned palette, not an inversion:
+ * it uses darker semantic colours for contrast on white and soft shadows instead of borders alone.
+ * The theme is selected by <html data-theme="dark|light">, set before first paint by the
+ * inline script in app/layout.tsx.
+ */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0b1120;
+  --sidebar: #0d1525;
+  --header: #0b1120;
+  --surface: #111c2e;
+  --elevated: #17243a;
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --positive: #10b981;
+  --negative: #f43f5e;
+  --warning: #f59e0b;
+  --foreground: #f1f5f9;
+  --secondary: #94a3b8;
+  --muted: #64748b;
+  --line: #263449;
+  --on-accent: #ffffff;
+  --overlay: rgb(2 6 16 / 0.65);
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.02) inset;
+  --shadow-pop: 0 12px 32px rgb(0 0 0 / 0.45);
+
+  /* Chart tokens (used by ChartContainer and any chart library) */
+  --chart-grid: #1f2c42;
+  --chart-axis: #64748b;
+  --chart-tooltip-bg: #17243a;
+  --chart-tooltip-border: #263449;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --background: #f1f5f9;
+  --sidebar: #ffffff;
+  --header: #ffffff;
+  --surface: #ffffff;
+  --elevated: #f8fafc;
+  --accent: #2563eb;
+  --accent-2: #3b82f6;
+  --positive: #059669;
+  --negative: #dc2626;
+  --warning: #d97706;
+  --foreground: #0f172a;
+  --secondary: #475569;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --on-accent: #ffffff;
+  --overlay: rgb(15 23 42 / 0.4);
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 1px 3px rgb(15 23 42 / 0.04);
+  --shadow-pop: 0 12px 32px rgb(15 23 42 / 0.16);
+
+  --chart-grid: #e2e8f0;
+  --chart-axis: #64748b;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e2e8f0;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-sidebar: var(--sidebar);
+  --color-header: var(--header);
   --color-surface: var(--surface);
-  --color-line: var(--line);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
+  --color-elevated: var(--elevated);
   --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-foreground: var(--foreground);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-on-accent: var(--on-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard focus: one consistent, visible ring */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* Thin, theme-aware scrollbars for tables and drawers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
